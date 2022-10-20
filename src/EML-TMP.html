@@ -1,0 +1,56 @@
+<html lang="en" dir="ltr">
+  <head>
+    <style type="text/css">
+      table th{ font-weight:bold; padding:8px; text-align:left; }
+      table thead th{ font-weight:bold; padding:12px; background-color: %{ws_bgcolor}; color: %{ws_fgcolor}; }
+      table td{ padding:8px; }
+      table tr{ border-bottom: solid 1px grey; }
+      table tr:nth-child(odd){ background-color:#cbcbcb; }
+      #-cws-eml-vw{
+        position: relative;
+      }
+      #-cws-eml-vw::after{
+        display: block;
+        content: "";
+        position: absolute;
+        bottom: 35%;
+        right: 0;
+        height: 100px;
+        border-style: solid;
+        border-width: 5px;
+        border-color: %{ws_color};
+      }
+      .color-face{ color: %{ws_color} !important; }
+      a{ color:inherit; text-decoration: none; font-weight: bold;}
+      a:hover{ color: %{ws_color} !important; }
+      body{ font-size: 1.15em; }
+    </style>
+  </head>
+  <body style="background-color: #F9F9FA; position:relative; font-family: sans-serif">
+  <section id="-cws-eml-vw" style="min-width: 320px;
+                  max-width: 640px;
+                  margin: 0 auto;
+                  background-color: #ffffff;
+                  -webkit-box-shadow: 0 1.5px 1.1px -1px #000;
+                  -moz-box-shadow: 0 1.5px 1.1px -1px #000;
+                  box-shadow: 0 1.5px 1.1px -1px #000;">
+
+    <header style="text-align:right; padding:12px; margin-bottom:14px" >
+      <a href="%{ws_weblink}"> <img style="width:auto; height:54px" src="%{ws_logo}" alt="Logo - %{ws_title}"></a>
+    </header>
+    <div style="padding:28px">
+      %{message}
+      <br style="clear: both;">
+    </div>
+    <div style="padding:21px; color:#6d6e70">
+      <img style="float:left; margin: 0 5px 5px" alt="Store QR Code" src="%{ws_qrcode}">
+      <h2>%{ws_title}</h2>
+      <p><a href="mailto:%{ws_email}">%{ws_email}</a> | <a href="tel:%{ws_phone}">%{ws_phone}</a></p>
+      <br style="float:none; clear:both">
+      %{watermark}
+    </div>
+    <br style="clear: both;">
+    %{unsubscribe}
+  </section>
+  </body>
+</html>

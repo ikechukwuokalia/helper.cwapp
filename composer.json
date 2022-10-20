@@ -1,0 +1,37 @@
+{
+  "name": "ikechukwuokalia/helper.cwapp",
+  "description": "Generic Helper for Catali Web OS",
+  "keywords": ["helper", "cws", "catali", "web", "stores"],
+  "homepage": "https://github.com/ikechukwuokalia/helper.cwapp",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Ikechukwu Okalia",
+      "email": "dev@ikechukwuokalia.com"
+    }
+  ],
+  "require": {
+    "tymfrontiers-cdn/php-data" : ">=0.1@stable",
+    "tymfrontiers-cdn/php-mysql-database" : ">=0.1@stable",
+    "tymfrontiers-cdn/php-mysql-database-object" : ">=0.1@stable",
+    "tymfrontiers-cdn/php-pagination" : ">=0.1@stable",
+    "tymfrontiers-cdn/php-instance-error" : ">=0.1@stable",
+    "tymfrontiers-cdn/php-validator" : ">=0.1@stable",
+    "tymfrontiers-cdn/php-generic" : ">=0.1@stable",
+    "tymfrontiers-cdn/php-multiform" : ">=0.1@stable",
+    "ikechukwuokalia/fileman.cwapp" : ">=0.1@stable"
+  },
+  "require-dev": {},
+  "autoload": {
+    "psr-4": {
+      "IO\\" : "src/",
+      "Catali\\" : "src/"
+    },
+    "files" : [
+      "src/Functions.php",
+      "src/Vars.php",
+      "src/Constants.php"
+    ]
+  }
+}
