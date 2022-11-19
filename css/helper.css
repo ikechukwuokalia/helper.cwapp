@@ -1,6 +1,7 @@
-.cwos-snavheadn ::before,
-.cwos-snavheadn ::after {
+.cwos-snavheadn::before,
+.cwos-snavheadn::after {
   font-family: "Font Awesome 5 Free" !important;
+  font-weight: 900 !important;
 }
 
 /*# sourceMappingURL=helper.css.map */

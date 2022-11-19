@@ -366,10 +366,10 @@ function setting_variant (string $pattern){
 }
 function setting_option (string $name, $conn = false): array | null {
   global $database;
-  if (!$conn || !$conn instanceof MySQLDatabase || $conn->getServer() !== get_dbserver("CWS")) $conn = query_conn("CWS", $database);
+  if (!$conn || !$conn instanceof MySQLDatabase || $conn->getServer() !== get_dbserver(get_constant("PRJ_SERVER_NAME"))) $conn = query_conn(get_constant("PRJ_SERVER_NAME"), $database);
 
-  // $conn = ($database && $database instanceof MySQLDatabase && $database->getServer() == get_dbserver("CWS")) ? $database : query_conn("CWS");
-  if ($found = (new MultiForm(get_database("CWS", "data"), "setting_options", "id", $conn))->findBySql("SELECT * FROM :db:.:tbl: WHERE `name` = '{$conn->escapeValue($name)}' AND `enabled` = TRUE LIMIT 1")) {
+  // $conn = ($database && $database instanceof MySQLDatabase && $database->getServer() == get_dbserver(get_constant("PRJ_SERVER_NAME"))) ? $database : query_conn(get_constant("PRJ_SERVER_NAME"));
+  if ($found = (new MultiForm(get_database(get_constant("PRJ_SERVER_NAME"), "data"), "setting_options", "id", $conn))->findBySql("SELECT * FROM :db:.:tbl: WHERE `name` = '{$conn->escapeValue($name)}' AND `enabled` = TRUE LIMIT 1")) {
       $type_arr = (new \TymFrontiers\Validator)->validate_type;
     return [
       "encrypt" => (bool)$found[0]->encrypt,
