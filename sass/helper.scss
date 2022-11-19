@@ -1,2 +1,7 @@
 @import "fn";
-@import "../../../../var";
+@import "../../../../base-color";
+
+.cwos-snavheadn ::before,
+.cwos-snavheadn ::after{
+  font-family: "Font Awesome 5 Free" !important;
+}

@@ -1,3 +1,6 @@
-
+.cwos-snavheadn ::before,
+.cwos-snavheadn ::after {
+  font-family: "Font Awesome 5 Free" !important;
+}
 
 /*# sourceMappingURL=helper.css.map */

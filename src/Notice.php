@@ -1,5 +1,5 @@
 <?php
-namespace Catali;
+namespace IO;
 use \TymFrontiers\MySQLDatabase,
     \TymFrontiers\InstanceError,
     \TymFrontiers\Validator;

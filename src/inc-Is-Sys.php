@@ -1,5 +1,5 @@
 <?php
-namespace Catali;
+namespace IO;
 use \TymFrontiers\MultiForm;
 
 $is_sys = !empty($http_auth) && (bool)$http_auth && $auth instanceof \TymFrontiers\API\Authentication

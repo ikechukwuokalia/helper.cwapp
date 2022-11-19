@@ -1,5 +1,5 @@
 <?php
-namespace Catali;
+namespace IO;
 require_once "../../.appinit.php";
 use \TymFrontiers\Generic,
     \TymFrontiers\InstanceError;

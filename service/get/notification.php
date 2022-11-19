@@ -1,5 +1,5 @@
 <?php
-namespace Catali;
+namespace IO;
 require_once "../../.appinit.php";
 use \TymFrontiers\HTTP,
     \TymFrontiers\Generic,
@@ -12,7 +12,6 @@ $post = !empty($_POST) ? $_POST : $_GET;
 $gen = new Generic;
 $params = $gen->requestParam([
   "id" => ["id","int"],
-  "ws" => ["ws","pattern", "/^289([0-9]{8,11})$/"],
   "search" => ["search","text",3,25],
   "unread" => ["unread","boolean"],
   "page" => ["page","int"],
@@ -36,12 +35,8 @@ $data = new Data;
 $ent_server = !empty($_COOKIE['wssrv']) ? $data->decodeDecrypt($_COOKIE['wssrv']) : false;
 if (!$ent_server) $ent_server = get_constant("PRJ_SERVER_NAME");
 $usr_code = code_storage($params["user"], get_constant("PRJ_SERVER_NAME"));
-$ws_code = empty($params['ws']) ? false : code_storage($params["ws"], $ent_server);
-$ws_access = !$ws_code ? false : ws_access($params['ws'], $params['user']);
 $cnd = " WHERE ntc.`user` = '{$params['user']}' ";
-if ($ws_code) {
-  $cnd .= "OR ntc.`user` = '{$params['ws']}'";
-}
+
 $query = "SELECT ntc.id, ntc.is_read, ntc.`user`, ntc.`heading`, ntc.message, ntc.`priority`, ntc.`path`, 
                 ntc.`action`, ntc._created, ntc._updated,
                 (
@@ -62,13 +57,6 @@ if ($usr_code) {
     WHERE `{$usr_code[2]}` = ntc.`user`
     LIMIT 1
   ) AS user_name ";
-} if ($ws_code && $ws_access) {
-  $query .= ", (
-    SELECT `name`
-    FROM `{$ws_code[0]}`.`{$ws_code[1]}`
-    WHERE `{$ws_code[2]}` = ntc.`user`
-    LIMIT 1
-  ) AS ws_name ";
 }
 $query .= "FROM :db:.:tbl: AS ntc ";
 

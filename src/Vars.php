@@ -1,5 +1,5 @@
 <?php
-namespace Catali;
+namespace IO;
 global $access_ranks,
        $reverse_access_ranks,
        $file_upload_groups,
@@ -311,7 +311,10 @@ $code_prefix = [
   "batch"              => "127", # BCH
   "mailing_list"       => "218", # MLS
   "otp"                => "495", # OTP
-  "file_id"            => "583" # FID
+  "file_id"            => "583", # FID
+  "admin_profile"      => "052", # APC
+  "profile"            => "152", # BPC
+  "developer_profile"  => "352" # DPC
 ];
 $reverse_code_prefix = [
   "597" => [
@@ -369,5 +372,26 @@ $reverse_code_prefix = [
     "player" => "file-id.php",
     "title" => "File ID",
     "storage" => ["file", "file_meta", "code"]
+  ],
+  "052" => [
+    "alpha" => "APC",
+    "name" => "admin_profile",
+    "player" => "admin-profile.php",
+    "title" => "Admin Profile Code",
+    "storage" => ["admin", "users", "code"]
+  ],
+  "152" => [
+    "alpha" => "BPC",
+    "name" => "profile",
+    "player" => "user-profile.php",
+    "title" => "Bosh User Profile",
+    "storage" => ["base", "users", "code"]
+  ],
+  "352" => [
+    "alpha" => "DPC",
+    "name" => "developer_profile",
+    "player" => "developer-profile.php",
+    "title" => "Developer Account Code",
+    "storage" => ["developer", "users", "code"]
   ]
 ];

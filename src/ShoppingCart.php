@@ -1,7 +1,6 @@
 <?php
-namespace Catali;
+namespace IO;
 
-use Mpdf\Tag\Em;
 use \TymFrontiers\MySQLDatabase,
     \TymFrontiers\InstanceError,
     \TymFrontiers\Validator;
