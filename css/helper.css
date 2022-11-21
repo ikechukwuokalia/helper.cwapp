@@ -1,7 +1,22 @@
-.cwos-snavheadn::before,
 .cwos-snavheadn::after {
   font-family: "Font Awesome 5 Free" !important;
   font-weight: 900 !important;
+  display: none;
+  content: "\f107" !important;
+}
+
+.xpndnv .cwos-snavheadn::after {
+  content: "\f068" !important;
+  font-weight: 900;
+}
+
+#cwos-sptltoggl {
+  display: none !important;
+}
+
+body {
+  display: none !important;
+  background-color: pink;
 }
 
 /*# sourceMappingURL=helper.css.map */
