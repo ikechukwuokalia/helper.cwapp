@@ -22,36 +22,6 @@ function set_constant (string $name, $value) {
     \define($prfx. $name, $value);
   }
 }
-/**
- * 
- * Create private include-file containing server(s) variable of array. E.g.
- * (!!) Never include this file on publicly access pages. | Here we only load it within the function
- * $servers = [
- *    "SERVERNAME" => [
- *       "domain"    => "server-domain.ext",
- *       "server"    => "127.0.0.1", // IP address
- *       "db_prefix" => "dbp_", // database prefix
- *       "enc_key" => "ENCKEY", // refer to https://github.com/tymfrontiers-cdn/php-data | Data -> encKey()
- *       "databases"  => [ // define databases
- *         "base"        => "general", // general access data
- *         "data"        => "datadb", // mostly readonly data
- *         "dev"         => "devdb", // if you plan tpo host developer profiles/API
- *         "file"        => "filestorage", // for storing file data. Can be same as base-db
- *         "log"         => "logdata" // basically write/write-only database
- *       ],
- *       "users"     => [ // database users having access to your database service
- *         "GUEST"       => ["GUESTUSER",   "PassWD12345"],
- *         "USER"        => ["KNOWNUSER",   "WDpaSS54321"]
- *       ]
- *    ]
- * ];
- * 
- * @param string $tag
- * @param string $tag_type
- * @return int
- * 
- */
-##
 
 function get_serverapp (string $server_name, string $app_name) {
   $db_user = get_dbuser($server_name, "developer");
