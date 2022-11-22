@@ -20,7 +20,9 @@
     "tymfrontiers-cdn/php-validator" : ">=0.1@stable",
     "tymfrontiers-cdn/php-generic" : ">=0.1@stable",
     "tymfrontiers-cdn/php-multiform" : ">=0.1@stable",
-    "ikechukwuokalia/fileman.cwapp" : ">=0.1@stable"
+    "ikechukwuokalia/file-manager.cwapp" : ">=0.1@stable",
+    "ikechukwuokalia/php-email" : ">=0.1@stable",
+    "ikechukwuokalia/php-otp" : ">=0.1@stable"
   },
   "require-dev": {},
   "autoload": {
