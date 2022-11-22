@@ -26,7 +26,7 @@ class Event{
   protected $_created;
 
   function __construct(string $title, string $info, string $channel='', string $user=''){
-    $server_name = get_constant("PRJ_SERVER_NAME");
+    $server_name = get_constant ("PRJ_SERVER_NAME");
     if (!self::$_db_name = get_database($server_name, "log")) throw new \Exception("[log] type database not set for server [{$server_name}]", 1);
     global $database;
     $conn = $database && $database instanceof MySQLDatabase ? $database : false;
