@@ -27,8 +27,7 @@
   "require-dev": {},
   "autoload": {
     "psr-4": {
-      "IO\\" : "src/",
-      "Catali\\" : "src/"
+      "IO\\" : "src/"
     },
     "files" : [
       "src/Functions.php",
