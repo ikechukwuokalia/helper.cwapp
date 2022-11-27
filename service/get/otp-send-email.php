@@ -1,6 +1,6 @@
 <?php
 namespace IO;
-require_once "../.appinit.php";
+require_once "../../.appinit.php";
 use TymFrontiers\Generic,
     TymFrontiers\Data,
     TymFrontiers\InstanceError;
@@ -35,11 +35,16 @@ if (!$params || !empty($gen->errors)) {
 }
 $otp = false;
 if ($params && !empty($params['email'])) {
-  if( (bool)$params['MUST_EXIST'] && !(new User)->valExist($params['email'], "email") ){
-    $errors[] = "Email: [{$params['email']}] not in record.";
-  }
-  if( (bool)$params['MUST_NOT_EXIST'] && (new User)->valExist($params['email'],"email") ){
-    $errors[] = "Email: [{$params['email']}] already in use.";
+  $object  = \class_exists("IO\User") ? new User () : (
+    \class_exists("IO\Admin") ? new Admin() : false
+  );
+  if ($object && \method_exists($object, "valExist")) {
+    if( (bool)$params['MUST_EXIST'] && !$object->valExist($params['email'], "email") ){
+      $errors[] = "Email: [{$params['email']}] not in record.";
+    }
+    if( (bool)$params['MUST_NOT_EXIST'] && $object->valExist($params['email'],"email") ){
+      $errors[] = "Email: [{$params['email']}] already in use.";
+    }
   }
   $token = "";
   if (!empty($params['code_length']) && !empty($params['code_variant'])) {
@@ -99,7 +104,7 @@ if ($params && !empty($params['email'])) {
     <div class="grid-8-tablet grid-6-desktop center-tablet">
       <div class="sec-div theme-color blue bg-white drop-shadow">
         <header class="paddn -pall -p20 color-bg">
-          <h1> <i class="fad fa-key-skeleton"></i> OTP required</h1>
+          <h1> <i class="fas fa-mobile-alt"></i> OTP required</h1>
         </header>
 
         <div class="paddn -pall -p20">
@@ -133,7 +138,7 @@ if ($params && !empty($params['email'])) {
               </div>
             </div>
             <div class="grid-5-tablet">
-              <button type="submit" id="otp-rsd-click" disabled class="theme-btn no-shadow"> Resend <i class="fad fa-repeat-alt"></i></button>
+              <button type="submit" id="otp-rsd-click" disabled class="theme-btn no-shadow"> Resend <i class="fas fa-redo"></i></button>
             </div> <br class="c-f">
             <div class="border -bthin -btop paddn -pall -p20">&nbsp;</div>
             <div class="grid-7-tablet">
@@ -141,7 +146,7 @@ if ($params && !empty($params['email'])) {
               <input type="text" id="otp-val" placeholder="000 000" class="vcode-text code">
             </div>
             <div class="grid-5-tablet"> <br>
-              <button type="button" onclick="verifyOTP();" class="theme-btn blue no-shadow">Continue <i class="fad fa-arrow-right"></i></button>
+              <button type="button" onclick="verifyOTP();" class="theme-btn blue no-shadow">Continue <i class="fas fa-arrow-right"></i></button>
             </div>
             <br class="c-f">
           </form>
@@ -152,23 +157,32 @@ if ($params && !empty($params['email'])) {
   <br class="c-f">
 </div>
 </div>
-<?php $conn->closeConnection(); ?>
+<?php if (!empty($conn) && $conn instanceof MySQLDatabase) $conn->closeConnection(); ?>
 <script type="text/javascript">
   cb = $("#otp-callback").val();
-  let email = $("#otp-email").val();
-  const verifyOTP = () => {
+  var email = $("#otp-email").val();
+  function verifyOTP() {
     let otp = $("#otp-val").val();
     if (otp && otp.length) {
       alert("Validating OTP code ..", {type:"progress", exit:false, exitBtn: false});
-      helpr_rsc(`/app/cataliws/helper.cwapp/service/get/otp-email-validate.php`, function(resp) {
-        let data = resp && "data" in resp ? resp.data : data;
-        if (cb || cb.length) {
-          window[cb](data.otp);
+      helpr_rsc(`/app/ikechukwuokalia/helper.cwapp/service/get/otp-email-validate.php`, function(resp) {
+        // check if it succeeded
+        if (resp && objectLength(resp.errors) <1 ) {
+          let data = resp && "data" in resp ? resp.data : resp;
+          if (cb || cb.length) {
+            window[cb](data.otp);
+          } else {
+            removeAlert();
+            setTimeout(function(){
+              alert(resp.message, {type:"success"});
+            }, 180);
+          }
         } else {
-          removeAlert();
-          setTimeout(function(){
-            alert(resp.message, {type:"success"});
-          }, 180);
+          if ("errors" in resp && "message" in resp && "status" in resp) {
+            alert(`<h2>[${resp.status}] ${resp.message}</h2><ol><li>${resp.errors.join("</li><li>")}</li></ol>`, {type:"error", exitBtn: true, exit: true});
+          } else {
+            alert(`<h2>Error</h2><p>Validation was not successful and response could not be interpreted.</p>`)
+          }
         }
       }, {email : email, otp: otp}, {}, function(status, msg){
         removeAlert();

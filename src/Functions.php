@@ -10,6 +10,8 @@ use \TymFrontiers\MultiForm,
     \TymFrontiers\HTTP,
     \TymFrontiers\MySQLDatabase,
     \TymFrontiers\Session;
+use function \get_database;
+use function \get_dbuser;
 
 function get_constant (string $name) {
   return \defined("CPRJ_PREFIX")
@@ -25,16 +27,49 @@ function set_constant (string $name, $value) {
 
 function get_serverapp (string $server_name, string $app_name) {
   $db_user = get_dbuser($server_name, "developer");
-  $db_name = get_database($server_name, "developer");
+  $db_name = get_database("developer", $server_name);
   if ($db_user && $conn = new MySQLDatabase(get_dbserver($server_name), $db_user[0], $db_user[1], $db_name)) {
-    if ($found = (new MultiForm($db_name, "server_apps", "id", $conn))->findBySql("SELECT * FROM :db:.:tbl: WHERE `server` = '{$conn->escapeValue($server_name)}' AND `name` = '{$conn->escapeValue($app_name)}' LIMIT 1 ")) {
+    $errors = [];
+    $mt = new MultiForm($db_name, "apps", "name", $conn);
+    if ($found = $mt->findBySql("SELECT `name`, _pu_key AS pu_key FROM :db:.:tbl: WHERE `name` = '{$conn->escapeValue($app_name)}' LIMIT 1 ")) {
       $app = new API\DevApp ($conn, $db_name, "apps");
       $app->load($found[0]->name, $found[0]->pu_key);
-      return !empty($app->name) ? $app : null;
+      if (!empty($app->name)) {
+        return $app;
+      } else {
+         if (!empty($app) && $app instanceof API\DevApp) {
+          $app->mergeErrors();
+          if ($app_errors = (new InstanceError($app, true))->get("", true)) {
+            foreach ($app_errors as $method => $errs) {
+              foreach ($errs as $err) {
+                $errors[] = $method . ": " . $err;
+              }
+            }
+          } else {
+            $errors[] = "Failed to load app";
+          }
+        }
+      }
+    } else {
+      // find mt errors
+      $mt->mergeErrors();
+      if ($mt_errors = (new InstanceError($mt, true))->get("", true)) {
+        foreach ($mt_errors as $method => $errs) {
+          foreach ($errs as $err) {
+            $errors[] = $method . ": " . $err;
+          }
+        }
+      } else {
+        $errors[] = "Unable to run search query";
+      }
+    }
+    if (!empty($errors)) {
+      throw new \Exception(\implode("\n", $errors));
     }
   }
   return null;
 }
+
 function get_navgroup (string $group_name):array {
   global $session;
   $return_navs = [];
@@ -58,6 +93,38 @@ function get_navgroup (string $group_name):array {
     }
   }
   return $return_navs;
+}
+function get_domainnav (string $domain):array {
+  global $session, $database;
+  $navs = [];
+  if ($domain_paths = (new MultiForm(get_database("admin", get_constant("PRJ_SERVER_NAME")), "work_paths", "id"))
+    ->findBySql("SELECT wkp.title, wkp.path, wkp.onclick, wkp.classname, wkp.icon,
+                        CONCAT(wkd.`path`, wkp.`path`) AS full_path
+              FROM :db:.:tbl: AS wkp
+              LEFT JOIN :db:.work_domains AS wkd ON wkd.`name` = wkp.domain
+              WHERE wkp.`domain` = '{$database->escapeValue($domain)}'
+              AND wkp.nav_visible = TRUE 
+              AND wkp.domain IN(
+                SELECT DISTINCT(domain)
+                FROM :db:.path_access
+                WHERE `user` = '{$session->name}'
+                AND access_scope NOT LIKE '%DENY%'
+              )
+              ORDER BY wkp.`sort` ASC")) {
+      // add domain links
+    foreach ($domain_paths as $lnk) {
+      $navs[] = [
+        "path"=> $lnk->full_path,
+        "title" => $lnk->title,
+        "newtab" => false,
+        "icon" => "<i class=\"{$lnk->icon}\"></i>",
+        "onclick" => $lnk->onclick,
+        "name" => \str_replace(["/", "#"], "", $lnk->path),
+        "classname" => $lnk->classname
+      ];
+    }
+  }
+  return $navs;
 }
 
 function email_temp (string $message, string $unsubscribe = '', string $template = ""){
@@ -137,7 +204,7 @@ function currency_symbol (string $currency):string {
 function data_get_score (string $table) {
   global $database;
   $table = $database->escapeValue($table);
-  if (!$score = (new MultiForm(get_database("BASE", "base"), "data_scores", "id"))->findBySql("SELECT * FROM :db:.:tbl: WHERE tbl = '{$table}' LIMIT 1")) {
+  if (!$score = (new MultiForm(get_database("base", "BASE"), "data_scores", "id"))->findBySql("SELECT * FROM :db:.:tbl: WHERE tbl = '{$table}' LIMIT 1")) {
     throw new \Exception("No record found for given table ({$table}).", 1);
   }
   $score = $score[0];
@@ -339,7 +406,7 @@ function setting_option (string $name, $conn = false): array | null {
   if (!$conn || !$conn instanceof MySQLDatabase || $conn->getServer() !== get_dbserver(get_constant("PRJ_SERVER_NAME"))) $conn = query_conn(get_constant("PRJ_SERVER_NAME"), $database);
 
   // $conn = ($database && $database instanceof MySQLDatabase && $database->getServer() == get_dbserver(get_constant("PRJ_SERVER_NAME"))) ? $database : query_conn(get_constant("PRJ_SERVER_NAME"));
-  if ($found = (new MultiForm(get_database(get_constant("PRJ_SERVER_NAME"), "data"), "setting_options", "id", $conn))->findBySql("SELECT * FROM :db:.:tbl: WHERE `name` = '{$conn->escapeValue($name)}' AND `enabled` = TRUE LIMIT 1")) {
+  if ($found = (new MultiForm(get_database("data", get_constant("PRJ_SERVER_NAME")), "setting_options", "id", $conn))->findBySql("SELECT * FROM :db:.:tbl: WHERE `name` = '{$conn->escapeValue($name)}' AND `enabled` = TRUE LIMIT 1")) {
       $type_arr = (new \TymFrontiers\Validator)->validate_type;
     return [
       "encrypt" => (bool)$found[0]->encrypt,
@@ -357,7 +424,7 @@ function setting_option (string $name, $conn = false): array | null {
 function setting_get_value (string $user, string $key, string $domain = "", $conn = false) {
   if (empty($domain)) $domain = get_constant("PRJ_BASE_DOMAIN");
   if (!$server_name = domain_server($domain)) throw new \Exception("Domain: [{$domain}] is not associated with any known server.", 1);
-  if (!$db_name = get_database($server_name, "base")) throw new \Exception("Database not found for domain [{$domain}] settings.", 1);
+  if (!$db_name = get_database("base", $server_name)) throw new \Exception("Database not found for domain [{$domain}] settings.", 1);
 
   if (!$conn || !$conn instanceof MySQLDatabase || $conn->getServer() !== get_dbserver($server_name)) $conn = query_conn($server_name);
   $user = $conn->escapeValue("{$domain}.{$user}");
@@ -369,7 +436,7 @@ return $found ? $found[0]->sval : null;
 function setting_set_value (string $user, string $key, $value, string $domain = "", $conn = false) {
   if (empty($domain)) $domain = get_constant("PRJ_BASE_DOMAIN");
   if (!$server_name = domain_server($domain)) throw new \Exception("Domain: [{$domain}] is not associated with any known server.", 1);
-  if (!$db_name = get_database($server_name, "base")) throw new \Exception("Database not found for domain [{$domain}] settings.", 1);
+  if (!$db_name = get_database("base", $server_name)) throw new \Exception("Database not found for domain [{$domain}] settings.", 1);
   if (!$conn || !$conn instanceof MySQLDatabase || $conn->getServer() !== get_dbserver($server_name)) $conn = query_conn($server_name);
   $option = setting_option($key);
   if (!$option) throw new \Exception("Setting property not found \r\n", 1);
@@ -448,7 +515,7 @@ function setting_set_file_default(string $user, string $set_key, int $file_id, b
   global $database;
   if (empty($domain)) $domain = get_constant("PRJ_BASE_DOMAIN");
   if (!$server_name = domain_server($domain)) throw new \Exception("Domain: [{$domain}] is not associated with any known server.", 1);
-  if (!$db_name = get_database($server_name, "file")) throw new \Exception("Database not found for domain [{$domain}] settings.", 1);
+  if (!$db_name = get_database("file", $server_name)) throw new \Exception("Database not found for domain [{$domain}] settings.", 1);
   if (!$conn || !$conn instanceof MySQLDatabase || $conn->getServer() !== get_dbserver($server_name)) $conn = query_conn($server_name, $database);
 
   $user = $conn->escapeValue($user);
@@ -484,7 +551,7 @@ function setting_unset_file_default (int $fid, $domain = "", $conn = false) {
   global $database;
   if (empty($domain)) $domain = get_constant("PRJ_BASE_DOMAIN");
   if (!$server_name = domain_server($domain)) throw new \Exception("Domain: [{$domain}] is not associated with any known server.", 1);
-  if (!$db_name = get_database($server_name, "file")) throw new \Exception("Database not found for domain [{$domain}] settings.", 1);
+  if (!$db_name = get_database("file", $server_name)) throw new \Exception("Database not found for domain [{$domain}] settings.", 1);
   if (!$conn || !$conn instanceof MySQLDatabase || $conn->getServer() !== get_dbserver($server_name)) $conn = query_conn($server_name, $database);
 
   if ((new MultiForm($db_name, "file_default", "id", $conn))->findBySql("SELECT * FROM :db:.:tbl: WHERE `file_id` = {$fid} LIMIT 1") && !$conn->query("DELETE FROM `{$db_name}`.`file_default` WHERE `file_id` = {$fid}")) {
@@ -496,7 +563,7 @@ function setting_get_file_default(string $user, string $set_key, $domain = "", $
   global $database;
   if (empty($domain)) $domain = get_constant("PRJ_BASE_DOMAIN");
   if (!$server_name = domain_server($domain)) throw new \Exception("Domain: [{$domain}] is not associated with any known server.", 1);
-  if (!$db_name = get_database($server_name, "file")) throw new \Exception("Database not found for domain [{$domain}] settings.", 1);
+  if (!$db_name = get_database("file", $server_name)) throw new \Exception("Database not found for domain [{$domain}] settings.", 1);
   if (!$conn || !$conn instanceof MySQLDatabase || $conn->getServer() !== get_dbserver($server_name)) $conn = query_conn($server_name, $database);
 
   $file_server = !empty($file_server) ? $file_server : get_constant("PRJ_FILE_SERVER");
@@ -518,7 +585,7 @@ function setting_check_file_default(int $file_id, $domain = "", $conn = false) {
   global $database;
   if (empty($domain)) $domain = get_constant("PRJ_BASE_DOMAIN");
   if (!$server_name = domain_server($domain)) throw new \Exception("Domain: [{$domain}] is not associated with any known server.", 1);
-  if (!$db_name = get_database($server_name, "file")) throw new \Exception("Database not found for domain [{$domain}] settings.", 1);
+  if (!$db_name = get_database("file", $server_name)) throw new \Exception("Database not found for domain [{$domain}] settings.", 1);
   if (!$conn || !$conn instanceof MySQLDatabase || $conn->getServer() !== get_dbserver($server_name)) $conn = query_conn($server_name, $database);
 
   if ($set = (new MultiForm($db_name, "file_default", "id", $conn))->findBySql("SELECT * FROM :db:.:tbl: WHERE `file_id` = {$file_id}")) {

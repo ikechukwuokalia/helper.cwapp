@@ -1,7 +1,7 @@
 <?php
 namespace IO;
 use \TymFrontiers\MySQLDatabase;
-if (empty($server_name)) $server_name = "CWS";
+if (empty($server_name)) $server_name = get_constant("PRJ_SERVER_NAME");
 if (!$access = db_cred($server_name, "DEVELOPER")) {
   echo \json_encode([
     "status" => "4.1",
@@ -12,7 +12,7 @@ if (!$access = db_cred($server_name, "DEVELOPER")) {
 } 
 $conn = false;
 try {
-  $conn = new MySQLDatabase(get_dbserver($server_name), $access[0], $access[1], get_database($server_name, "developer"));
+  $conn = new MySQLDatabase(get_dbserver($server_name), $access[0], $access[1], get_database("developer", $server_name));
 } catch (\Throwable $th) {
   echo \json_encode([
     "status" => "4.2",

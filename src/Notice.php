@@ -3,7 +3,10 @@ namespace IO;
 use \TymFrontiers\MySQLDatabase,
     \TymFrontiers\InstanceError,
     \TymFrontiers\Validator;
-
+use function \query_conn;
+use function \get_database;
+use function \get_dbserver;
+    
 class Notice {
   use \TymFrontiers\Helper\MySQLDatabaseObject,
       \TymFrontiers\Helper\Pagination;
@@ -42,7 +45,7 @@ class Notice {
       throw new \Exception("Database server not defined", 1);
     }
     // database name
-    if (!$db_name = get_database($srv, "base")) {
+    if (!$db_name = get_database("base", $srv)) {
       throw new \Exception("Base database name not set", 1);
     } 
     self::$_db_name = $db_name;

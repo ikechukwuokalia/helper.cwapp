@@ -32,8 +32,6 @@ $cart = new ShoppingCart($params['user'], $params['ws']);
 $cart->current_page = $page = (int)$params['page'] > 0 ? (int)$params['page'] : 1;
 
 $data = new Data;
-$ent_server = !empty($_COOKIE['wssrv']) ? $data->decodeDecrypt($_COOKIE['wssrv']) : false;
-if (!$ent_server) $ent_server = get_constant("PRJ_SERVER_NAME");
 $wsq = !empty($params['ws']) ? " AND crt.ws = '{$params['ws']}' " : "";
 $cnd = " WHERE crt.`user` = '{$params['user']}' {$wsq} ";
 
