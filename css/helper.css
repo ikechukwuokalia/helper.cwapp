@@ -10,4 +10,8 @@
   font-weight: 900;
 }
 
+#cwos-uiloadr::before {
+  content: "\f110" !important;
+}
+
 /*# sourceMappingURL=helper.css.map */
