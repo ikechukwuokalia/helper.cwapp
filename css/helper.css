@@ -12,6 +12,7 @@
 
 #cwos-uiloadr::before {
   content: "\f110" !important;
+  font-family: "Font Awesome 5 Free" !important;
 }
 
 /*# sourceMappingURL=helper.css.map */
