@@ -118,7 +118,7 @@ function get_domainnav (string $domain):array {
         "title" => $lnk->title,
         "newtab" => false,
         "icon" => "<i class=\"{$lnk->icon}\"></i>",
-        "onclick" => $lnk->onclick,
+        "onclick" => !empty($lnk->onclick) ? $lnk->onclick : "",
         "name" => \str_replace(["/", "#"], "", $lnk->path),
         "classname" => $lnk->classname
       ];
